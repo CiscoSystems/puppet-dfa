@@ -1,0 +1,60 @@
+#!/bin/bash
+
+# Parse vinci_location from /etc/vinci.ini
+line=`cat /etc/vinci.ini | grep ^vinci\_location=`
+export vinci_location=${line:15}
+cd "$vinci_location"
+
+echo "Delete Flows MAC $1 Seg $2 $VDP VLAN is $3" >> ./logs/client_samp.log
+dont_delete=0
+#List of all internal VLAN's obtained from the configured flows
+int_vlan=`sudo ovs-ofctl dump-flows dfa_ext | grep $3 | grep -v dl_dst | awk -F "dl_vlan=" '{print $2}' | awk '{print $1}'`
+echo "INT VLAN is $int_vlan" >> ./logs/client_samp.log
+for mac in `ps -ef | grep qemu | awk -F "mac=" '{print $2}' | awk -F "," '{print $1}'`
+do
+    echo "MAC IS $mac arg is $1" >> ./logs/client_samp.log
+    if [ "$mac" != "$1" ]
+    then
+        out=`./scripts/lookup.py br-int dfa_patch_int $mac`
+        vlan=`echo $out | awk '{print $2}'`
+        in_port=`echo $out | awk '{print $1}'`
+        echo out is $out >> ./logs/client_samp.log
+        echo Different MAC >> ./logs/client_samp.log
+        out=`./scripts/lookup.py dfa_ext dfa_patch_ext $mac`
+        echo out is $out >> ./logs/client_samp.log
+        ex_port=`echo $out | awk '{print $1}'`
+#If the internal VLAN belonging to any running process matches with the VLAN
+# (internal) configured for the flows, it means the flow is still in use
+# and so don't delete that flow.
+        for intern_vlan in `echo $int_vlan`
+        do
+            if [ $intern_vlan -eq $vlan ]
+            then
+                dont_delete=1
+                echo Same VLAN $vlan $intern_vlan In $in_port Ex $ex_port >> ./logs/client_samp.log
+            else
+                echo Different VLAN $intern_vlan $vlan In $in_port Ex $ex_port >> ./logs/client_samp.log
+            fi
+        done
+    else
+        dont_delete=1
+    fi
+done
+#check carefully when to delete
+if [ $dont_delete -eq 0 ]
+then
+    out=`./scripts/lookup.py dfa_ext dfa_patch_ext $1`
+    ex_port=`echo $out | awk '{print $1}'`
+    out=`./scripts/lookup.py br-int dfa_patch_int $1`
+    in_port=`echo $out | awk '{print $1}'`
+    for intern_vlan in `echo $int_vlan`
+    do
+        echo DELETE FLOWS $intern_vlan >> ./logs/client_samp.log
+        sudo ovs-ofctl del-flows dfa_ext in_port=$ex_port,dl_vlan=$intern_vlan
+        if [ $4 -eq 1 ]
+        then
+           sudo ovs-ofctl del-flows dfa_ext in_port=$ex_port,dl_vlan=$intern_vlan,dl_dst=00:00:00:00:00:00/01:00:00:00:00:00,dl_type=0x0800
+        fi
+        sudo ovs-ofctl del-flows br-int in_port=$in_port,dl_vlan=$3
+    done
+fi

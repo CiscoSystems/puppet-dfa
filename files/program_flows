@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# Parse vinci_location from /etc/vinci.ini
+line=`cat /etc/vinci.ini | grep ^vinci\_location=`
+export vinci_location=${line:15}
+cd "$vinci_location"
+
+echo hello >> ./logs/client_samp.log
+vdp_vlan=$3
+out=`./scripts/lookup.py br-int dfa_patch_int $1`
+echo MAC is $1 Seg $2 VDP VLAN $3 Mode $4 Anycast $5 >> ./logs/client_samp.log
+int_port=`echo $out | awk '{print $1}'`
+vlan=`echo $out | awk '{print $2}'`
+echo Int Port is $port VLAN is $vlan >> ./logs/client_samp.log
+echo out is $out >> ./logs/client_samp.log
+
+sudo ovs-ofctl add-flow br-int in_port=$int_port,dl_vlan=$vdp_vlan,actions=mod_vlan_vid:$vlan,normal
+
+out=`./scripts/lookup.py dfa_ext dfa_patch_ext $1`
+ext_port=`echo $out | awk '{print $1}'`
+echo Ext Port is $ext_port >> ./logs/client_samp.log
+echo out is $out >> ./logs/client_samp.log
+sudo ovs-ofctl add-flow dfa_ext in_port=$ext_port,dl_vlan=$vlan,actions=mod_vlan_vid:$vdp_vlan,normal
+if [ $4 -eq 1 ]
+then
+   sudo ovs-ofctl add-flow dfa_ext in_port=$ext_port,dl_vlan=$vlan,dl_dst=00:00:00:00:00:00/01:00:00:00:00:00,dl_type=0x0800,actions=mod_dl_dst:$5,mod_vlan_vid:$vdp_vlan,normal
+fi
+
+
+echo "sudo ovs-ofctl add-flow br-int in_port=$int_port,dl_vlan=$vdp_vlan,actions=mod_vlan_vid:$vlan,normal" >> ./logs/client_samp.log
+echo "sudo ovs-ofctl add-flow dfa_ext in_port=$ext_port,dl_vlan=$vlan,actions=mod_vlan_vid:$vdp_vlan,normal" >> ./logs/client_samp.log
+if [ $4 -eq 1 ]
+then
+  echo "sudo ovs-ofctl add-flow dfa_ext in_port=$ext_port,dl_vlan=$vlan,dl_dst=00:00:00:00:00:00/01:00:00:00:00:00,dl_type=0x0800,actions=mod_dl_dst:$5,mod_vlan_vid:$vdp_vlan,normal" >> ./logs/client_samp.log
+fi
+
+#sudo iptables -t filter -F
+#echo "sudo iptables -t filter -F" >> /tmp/VINCI

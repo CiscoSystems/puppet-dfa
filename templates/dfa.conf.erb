@@ -1,0 +1,30 @@
+[openstack]
+<% if mysql_host != 'UNSET' -%>
+mysql_host=<%= @mysql_host %>
+<% end -%>
+<% if mysql_user != 'UNSET' -%>
+mysql_user=<%= @mysql_user %>
+<% end -%>
+<% if mysql_password != 'UNSET' -%>
+mysql_password=<%= @mysql_password %>
+<% end -%>
+[vinci]
+vinci_location=/opt/dfa
+<% if uplink_intf != 'UNSET' -%>
+uplink_intf=<%= @uplink_intf %>
+<% end -%>
+[DCNM]
+<% if dcnm_ip_addr != 'UNSET' -%>
+IP=<%= @dcnm_ip_addr %>
+<% end -%>
+<% if dcnm_username != 'UNSET' -%>
+User=<%= @dcnm_username %>
+<% end -%>
+<% if dcnm_password != 'UNSET' -%>
+Password=<%= @dcnm_password %>
+<% end -%>
+[Tenant]
+<% if gateway_mac != 'UNSET' -%>
+gateway_mac=<%= @gateway_mac %>
+<% end -%>
+

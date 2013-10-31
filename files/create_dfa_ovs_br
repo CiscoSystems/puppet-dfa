@@ -1,0 +1,30 @@
+#!/bin/bash
+echo CREATE OVS >> /tmp/fill
+if [ "`sudo ovs-vsctl list-br | \grep dfa_ext`" == "dfa_ext" ]; then
+echo
+else
+sudo ovs-vsctl add-br dfa_ext
+fi
+if [ "`sudo ovs-vsctl list-ports br-int | \grep dfa_patch_int`" == "dfa_patch_int" ]; then
+echo
+else
+sudo ovs-vsctl add-port br-int dfa_patch_int
+sudo ovs-vsctl set interface dfa_patch_int type=patch
+sudo ovs-vsctl set interface dfa_patch_int options:peer=dfa_patch_ext
+fi
+if [ "`sudo ovs-vsctl list-ports dfa_ext | \grep dfa_patch_ext`" == "dfa_patch_ext" ]; then
+echo
+else
+sudo ovs-vsctl add-port dfa_ext dfa_patch_ext
+sudo ovs-vsctl set interface dfa_patch_ext type=patch
+sudo ovs-vsctl set interface dfa_patch_ext options:peer=dfa_patch_int
+fi
+uplink_intf=`grep uplink_intf /etc/vinci.ini | grep -v ^# | awk -F'=' '{print $2}'`
+if [ "`sudo ovs-vsctl list-ports dfa_ext | \grep $uplink_intf`" == "$uplink_intf" ]; then
+echo
+else
+sudo ovs-vsctl add-port dfa_ext $uplink_intf
+fi
+ifconfig dfa_ext up
+ifconfig dfa_ext multicast up
+
