@@ -63,12 +63,6 @@ class dfa($uplink_intf='UNSET',
         source   => 'puppet:///modules/dfa/lldpad.init',
         require  => File['/opt/dfa/files/gold_temp_short.conf'],
       }
-      file {'/etc/init/lldpad.conf':
-        ensure   => present,
-        mode     => 755,
-        source   => 'puppet:///modules/dfa/lldpad.conf',
-        require  => File['/opt/dfa/files/gold_temp_short.conf'],
-      }
       file {'/usr/sbin/lldpad':
         ensure   => present,
         mode     => 755,
@@ -85,7 +79,6 @@ class dfa($uplink_intf='UNSET',
                            '/opt/dfa/files/delete_flows',
                            '/usr/sbin/lldpad',
                            '/etc/init.d/lldpad',
-                           '/etc/init/lldpad.conf',
                            '/opt/dfa/files/gold_temp_short.conf']],
       }
       file {'/etc/init.d/pktcpt':
@@ -107,7 +100,7 @@ class dfa($uplink_intf='UNSET',
 #                      Package['libmysqlclient-dev','libpcap0.8'],
                       Package['libpcap0.8'],
                       File['/opt/dfa/files/client_sample', 
-                           '/usr/sbin/lldpad']],
+                           '/usr/sbin/pktcpt']],
       }
       file {'/usr/sbin/create_dfa_ovs_br':
         ensure   => present,
@@ -117,8 +110,7 @@ class dfa($uplink_intf='UNSET',
       exec {'/usr/sbin/create_dfa_ovs_br':
         path      => ['/usr/sbin/', '/usr/bin/', '/bin/', '/sbin/'],
         logoutput => true,
-        require   => File['/etc/vinci.ini'],
-#        require   => [File['/etc/vinci.ini'],Service['ovs-vswitchd']],
+        require   => [File['/etc/vinci.ini'],Service['openvswitch-switch']],
       }
   }
 }

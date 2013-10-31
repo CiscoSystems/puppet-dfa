@@ -47,6 +47,9 @@
 
 LLDPAD=lldpad
 LLDPAD_BIN=/usr/sbin/$LLDPAD
+DAEMON=$LLDPAD_BIN
+NAME="$LLDPAD"
+PIDFILE="/var/run/${NAME}.pid"
 
 test -x $LLDPAD_BIN || { echo "$LLDPAD_BIN not installed";
 	if [ "$1" = "stop" ]; then exit 0;
@@ -173,21 +176,7 @@ case "$1" in
 		[ $? -eq 0 ] && rm -f /var/lock/subsys/lldpad
 		;;
 	status)
-		echo -n "Checking for service $LLDPAD: "
-  		p=`dcbtool ping 2> /dev/null`
-		RC=$?
-		if [ "$RC" != "0" ]; then
-			echo "stopped"
-			if [ -f /var/lock/subsys/lldpad ]; then
-				rc_failed 2
-			elif [ -z "$p" ]; then
-				rc_failed 1
-			else
-				rc_failed 3
-			fi
-		else
-			echo "running"
-		fi
+        status_of_proc -p "${PIDFILE}" "${DAEMON}" "${NAME}" && exit 0 || exit $?
 		;;
 	try-restart|condrestart)
 		## Do a restart only if the service was active before.

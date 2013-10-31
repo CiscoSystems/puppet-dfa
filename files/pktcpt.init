@@ -26,6 +26,9 @@
 
 PKTCPT=pktcpt
 PKTCPT_BIN=/usr/sbin/$PKTCPT
+DAEMON=$PKTCPT_BIN
+NAME="$PKTCPT"
+PIDFILE="/var/run/${NAME}.pid"
 
 test -x $PKTCPT_BIN || { echo "$PKTCPT_BIN not installed";
 	if [ "$1" = "stop" ]; then exit 0;
@@ -144,6 +147,7 @@ case "$1" in
 		start_daemon $PKTCPT_BIN $OPTIONS
 		rc_status -v
 		[ $? -eq 0 ] && touch /var/lock/subsys/pktcpt
+        echo `pidof $PKTCPT_BIN` > /var/run/pktcpt.pid
 		;;
 	stop)
 		[ "$EUID" = "0" ] || exit 4
@@ -155,7 +159,7 @@ case "$1" in
 		[ $? -eq 0 ] && rm -f /var/lock/subsys/pktcpt
 		;;
 	status)
-        status_of_proc -p /var/run/pktcpt /usr/sbin/pktcpt pktcpt && exit 0 || exit $?
+        status_of_proc -p "${PIDFILE}" "${DAEMON}" "${NAME}" && exit 0 || exit $?
 		;;
 	try-restart|condrestart)
 		## Do a restart only if the service was active before.
