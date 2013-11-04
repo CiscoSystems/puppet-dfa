@@ -68,19 +68,6 @@ class dfa($uplink_intf='UNSET',
         mode     => 755,
         source   => 'puppet:///modules/dfa/lldpad',
       }
-      service {'lldpad':
-        ensure    => running,
-        enable    => true,
-        subscribe => File['/etc/vinci.ini'],
-#        require   => [Service['networking'], 
-        require   => [
-                      Package['libconfig8','libnl-dev'],
-                      File['/opt/dfa/files/program_flows', 
-                           '/opt/dfa/files/delete_flows',
-                           '/usr/sbin/lldpad',
-                           '/etc/init.d/lldpad',
-                           '/opt/dfa/files/gold_temp_short.conf']],
-      }
       file {'/etc/init.d/pktcpt':
         ensure   => present,
         mode     => 755,
@@ -91,17 +78,6 @@ class dfa($uplink_intf='UNSET',
         mode     => 755,
         source   => 'puppet:///modules/dfa/pktcpt',
       }
-      service {'pktcpt':
-        ensure    => running,
-        enable    => true,
-        subscribe => File['/etc/vinci.ini'],
-#        require   => [Service['networking'], 
-        require   => [
-#                      Package['libmysqlclient-dev','libpcap0.8'],
-                      Package['libpcap0.8'],
-                      File['/opt/dfa/files/client_sample', 
-                           '/usr/sbin/pktcpt']],
-      }
       file {'/usr/sbin/create_dfa_ovs_br':
         ensure   => present,
         mode     => 755,
@@ -111,6 +87,32 @@ class dfa($uplink_intf='UNSET',
         path      => ['/usr/sbin/', '/usr/bin/', '/bin/', '/sbin/'],
         logoutput => true,
         require   => [File['/etc/vinci.ini'],Service['openvswitch-switch']],
+      }
+      ->
+      service {'lldpad':
+        ensure    => running,
+        enable    => true,
+        subscribe => File['/etc/vinci.ini'],
+        require   => [
+                      Service['openvswitch-switch'],
+                      Package['libconfig8','libnl-dev'],
+                      File['/opt/dfa/files/program_flows', 
+                           '/opt/dfa/files/delete_flows',
+                           '/usr/sbin/lldpad',
+                           '/etc/init.d/lldpad',
+                           '/opt/dfa/files/gold_temp_short.conf']],
+      }
+      ->
+      service {'pktcpt':
+        ensure    => running,
+        enable    => true,
+        subscribe => File['/etc/vinci.ini'],
+        require   => [
+#                      Package['libmysqlclient-dev','libpcap0.8'],
+                      Service['openvswitch-switch'],
+                      Package['libpcap0.8'],
+                      File['/opt/dfa/files/client_sample', 
+                           '/usr/sbin/pktcpt']],
       }
   }
 }
