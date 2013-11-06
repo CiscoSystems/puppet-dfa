@@ -9,7 +9,7 @@ class dfa($uplink_intf='UNSET',
             $gateway_mac='UNSET') {
     file {'/etc/vinci.ini':
       ensure => file,
-      content => template('/etc/puppet/modules/dfa/templates/dfa.conf.erb'),
+      content => template('dfa/dfa.conf.erb'),
     }
     file {'/opt/dfa/':
       ensure  => directory,
