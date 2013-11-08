@@ -86,7 +86,9 @@ class dfa($uplink_intf='UNSET',
       exec {'/usr/sbin/create_dfa_ovs_br':
         path      => ['/usr/sbin/', '/usr/bin/', '/bin/', '/sbin/'],
         logoutput => true,
-        require   => [File['/etc/vinci.ini'],Service['openvswitch-switch']],
+        require   => [File['/etc/vinci.ini'],
+                      Service['openvswitch-switch', 
+                              'quantum-plugin-openvswitch-agent']],
       }
       ->
       service {'lldpad':
@@ -94,7 +96,8 @@ class dfa($uplink_intf='UNSET',
         enable    => true,
         subscribe => File['/etc/vinci.ini'],
         require   => [
-                      Service['openvswitch-switch'],
+                      Service['openvswitch-switch',
+                              'quantum-plugin-openvswitch-agent'],
                       Package['libconfig8','libnl-dev'],
                       File['/opt/dfa/files/program_flows', 
                            '/opt/dfa/files/delete_flows',
@@ -108,9 +111,9 @@ class dfa($uplink_intf='UNSET',
         enable    => true,
         subscribe => File['/etc/vinci.ini'],
         require   => [
-#                      Package['libmysqlclient-dev','libpcap0.8'],
-                      Service['openvswitch-switch'],
-                      Package['libpcap0.8'],
+                      Package['libmysqlclient-dev','libpcap0.8'],
+                      Service['openvswitch-switch', 
+                              'quantum-plugin-openvswitch-agent'],
                       File['/opt/dfa/files/client_sample', 
                            '/usr/sbin/pktcpt']],
       }

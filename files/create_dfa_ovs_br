@@ -1,5 +1,7 @@
-#!/bin/bash
-echo CREATE OVS >> /tmp/fill
+#!/usr/bin/env bash
+uplink_intf=`grep uplink_intf /etc/vinci.ini | grep -v ^# | awk -F'=' '{print $2}'`
+echo CREATE OVS $uplink_intf>> /tmp/fill
+ifconfig $uplink_intf up
 if [ "`sudo ovs-vsctl list-br | \grep dfa_ext`" == "dfa_ext" ]; then
 echo
 else
@@ -19,7 +21,6 @@ sudo ovs-vsctl add-port dfa_ext dfa_patch_ext
 sudo ovs-vsctl set interface dfa_patch_ext type=patch
 sudo ovs-vsctl set interface dfa_patch_ext options:peer=dfa_patch_int
 fi
-uplink_intf=`grep uplink_intf /etc/vinci.ini | grep -v ^# | awk -F'=' '{print $2}'`
 if [ "`sudo ovs-vsctl list-ports dfa_ext | \grep $uplink_intf`" == "$uplink_intf" ]; then
 echo
 else
