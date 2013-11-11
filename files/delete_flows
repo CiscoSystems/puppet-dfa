@@ -15,12 +15,12 @@ do
     echo "MAC IS $mac arg is $1" >> ./logs/client_samp.log
     if [ "$mac" != "$1" ]
     then
-        out=`./scripts/lookup.py br-int dfa_patch_int $mac`
+        out=`./files/lookup.py br-int dfa_patch_int $mac`
         vlan=`echo $out | awk '{print $2}'`
         in_port=`echo $out | awk '{print $1}'`
         echo out is $out >> ./logs/client_samp.log
         echo Different MAC >> ./logs/client_samp.log
-        out=`./scripts/lookup.py dfa_ext dfa_patch_ext $mac`
+        out=`./files/lookup.py dfa_ext dfa_patch_ext $mac`
         echo out is $out >> ./logs/client_samp.log
         ex_port=`echo $out | awk '{print $1}'`
 #If the internal VLAN belonging to any running process matches with the VLAN
@@ -43,9 +43,9 @@ done
 #check carefully when to delete
 if [ $dont_delete -eq 0 ]
 then
-    out=`./scripts/lookup.py dfa_ext dfa_patch_ext $1`
+    out=`./files/lookup.py dfa_ext dfa_patch_ext $1`
     ex_port=`echo $out | awk '{print $1}'`
-    out=`./scripts/lookup.py br-int dfa_patch_int $1`
+    out=`./files/lookup.py br-int dfa_patch_int $1`
     in_port=`echo $out | awk '{print $1}'`
     for intern_vlan in `echo $int_vlan`
     do

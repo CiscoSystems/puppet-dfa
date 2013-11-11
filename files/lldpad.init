@@ -159,8 +159,8 @@ case "$1" in
 		[ "$EUID" = "0" ] || exit 4
 		echo -n $"Starting $LLDPAD: "
 		$LLDPAD_BIN -k
-        uplink_intf=`grep uplink_eth_interface /etc/vinci.ini | grep -v ^# | awk -F'=' '{print $2}'`
-        mac=`ifconfig $uplink_intf | grep HWaddr | awk '{print $5}'`
+        uplink_intf=`grep uplink_intf /etc/vinci.ini | grep -v ^# | awk -F'=' '{print $2}'`
+        mac=`ifconfig $uplink_intf | grep HWaddr | awk '{print $5}' | sed -e "s/://g"`
         macend=${mac}
         sed -e "s/eth4/$uplink_intf/g;s/E2BA15A40C/${macend^^}/g" /opt/dfa/files/gold_temp_short.conf > /opt/dfa/files/temp_short.conf
         OPTIONS="-V 55 -f /opt/dfa/files/temp_short.conf"

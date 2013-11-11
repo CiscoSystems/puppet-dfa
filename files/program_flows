@@ -7,7 +7,7 @@ cd "$vinci_location"
 
 echo hello >> ./logs/client_samp.log
 vdp_vlan=$3
-out=`./scripts/lookup.py br-int dfa_patch_int $1`
+out=`./files/lookup.py br-int dfa_patch_int $1`
 echo MAC is $1 Seg $2 VDP VLAN $3 Mode $4 Anycast $5 >> ./logs/client_samp.log
 int_port=`echo $out | awk '{print $1}'`
 vlan=`echo $out | awk '{print $2}'`
@@ -16,7 +16,7 @@ echo out is $out >> ./logs/client_samp.log
 
 sudo ovs-ofctl add-flow br-int in_port=$int_port,dl_vlan=$vdp_vlan,actions=mod_vlan_vid:$vlan,normal
 
-out=`./scripts/lookup.py dfa_ext dfa_patch_ext $1`
+out=`./files/lookup.py dfa_ext dfa_patch_ext $1`
 ext_port=`echo $out | awk '{print $1}'`
 echo Ext Port is $ext_port >> ./logs/client_samp.log
 echo out is $out >> ./logs/client_samp.log
