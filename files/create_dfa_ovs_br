@@ -2,6 +2,11 @@
 uplink_intf=`grep uplink_intf /etc/vinci.ini | grep -v ^# | awk -F'=' '{print $2}'`
 echo CREATE OVS $uplink_intf>> /tmp/fill
 ifconfig $uplink_intf up
+if [ "`sudo ovs-vsctl list-br | \grep br-tun`" == "br-tun" ]; then
+sudo ovs-vsctl del-br br-tun
+else
+echo
+fi
 if [ "`sudo ovs-vsctl list-br | \grep dfa_ext`" == "dfa_ext" ]; then
 echo
 else
