@@ -93,7 +93,7 @@ class dfa($uplink_intf='UNSET',
       ->
       service {'lldpad':
         ensure    => running,
-        enable    => true,
+        enable    => false,
         subscribe => File['/etc/vinci.ini'],
         require   => [
                       Service['openvswitch-switch',

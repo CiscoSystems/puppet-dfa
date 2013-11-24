@@ -37,7 +37,7 @@
 #
 ### BEGIN INIT INFO
 # Provides: lldpad
-# Required-Start: network
+# Required-Start: $remote_fs $network $all
 # Required-Stop:
 # Default-Start: 3 5
 # Default-Stop:
