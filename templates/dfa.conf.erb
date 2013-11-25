@@ -28,6 +28,9 @@ mysql_user=<%= @mysql_user %>
 <% if mysql_password != 'UNSET' -%>
 mysql_password=<%= @mysql_password %>
 <% end -%>
+<% if dfa_tunnel_base != 'UNSET' -%>
+dfa_tunnel_base=<%= @dfa_tunnel_base %>
+<% end -%>
 [vinci]
 vinci_location=/opt/dfa
 <% if uplink_intf != 'UNSET' -%>

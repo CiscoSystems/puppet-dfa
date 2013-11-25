@@ -25,7 +25,8 @@ class dfa($uplink_intf='UNSET',
             $mysql_user='UNSET',
             $mysql_password='UNSET',
             $compute='UNSET',
-            $gateway_mac='UNSET') {
+            $gateway_mac='UNSET',
+            $dfa_tunnel_base='UNSET') {
     file {'/etc/vinci.ini':
       ensure => file,
       content => template('dfa/dfa.conf.erb'),
