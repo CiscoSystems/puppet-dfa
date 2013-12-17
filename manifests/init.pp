@@ -43,6 +43,24 @@ class dfa($uplink_intf='UNSET',
       mode     => 644,
       require => File['/etc/vinci.ini'],
     } 
+    if $compute == 'false' {
+      file {'/usr/sbin/dfa_control_scr':
+        ensure   => present,
+        mode     => 755,
+        source   => 'puppet:///modules/dfa/dfa_control_scr',
+      }
+      exec {'/usr/sbin/dfa_control_scr':
+        path      => ['/usr/sbin/', '/usr/bin/', '/bin/', '/sbin/'],
+        logoutput => true,
+        require   => [File['/etc/vinci.ini'],
+                      Service['mysql',
+                              'apache2',
+                              'keystone',
+                              'quantum-server',
+                              'nova-api', 
+                              'nova-scheduler']],
+      }
+    }
     if $compute == 'true' {
       file {'/opt/dfa/files/client_sample':
         ensure   => present,
