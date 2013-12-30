@@ -155,12 +155,14 @@ case "$1" in
 		[ "$EUID" = "0" ] || exit 4
 		echo -n $"Starting $PKTCPT: "
 		#$PKTCPT_BIN -k
+        debug_flag="false"
         uplink_intf=`grep uplink_intf  /etc/vinci.ini | grep -v ^# | awk -F'=' '{print $2}'`
         mysql_host=`grep mysql_host /etc/vinci.ini | grep -v ^# | awk -F'=' '{print $2}'`
         mysql_username=`grep mysql_user /etc/vinci.ini | grep -v ^# | awk -F'=' '{print $2}'`
         mysql_password=`grep mysql_password /etc/vinci.ini | grep -v ^# | awk -F'=' '{print $2}'`
         vinci_location=`grep vinci_location /etc/vinci.ini | grep -v ^# | awk -F'=' '{print $2}'`
-        OPTIONS="$uplink_intf $mysql_host $mysql_username $mysql_password $vinci_location/logs/pktcpt.log $vinci_location/files"
+        debug_flag=`grep vinci_detail_debug /etc/vinci.ini | grep -v ^# | awk -F'=' '{print $2}'`
+        OPTIONS="$uplink_intf $mysql_host $mysql_username $mysql_password $vinci_location/logs/pktcpt.log $vinci_location/files $debug_flag"
 		start_daemon $PKTCPT_BIN $OPTIONS
 		rc_status -v
 		[ $? -eq 0 ] && touch /var/lock/subsys/pktcpt

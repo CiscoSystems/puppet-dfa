@@ -21,25 +21,29 @@
 #################################################
 
 # Parse vinci_location from /etc/vinci.ini
+debug_flag=`grep vinci_detail_debug /etc/vinci.ini | grep -v ^# | awk -F'=' '{print $2}'`
 line=`cat /etc/vinci.ini | grep ^vinci\_location=`
 export vinci_location=${line:15}
 cd "$vinci_location"
 
-echo hello >> ./logs/client_samp.log
 vdp_vlan=$3
 out=`./files/lookup.py br-int dfa_patch_int $1`
-echo MAC is $1 Seg $2 VDP VLAN $3 Mode $4 Anycast $5 >> ./logs/client_samp.log
+logger -p local5.notice -t PRG_FLOW "Rcvd Msg MAC is $1 Seg $2 VDP VLAN $3 Mode $4 Anycast $5"
 int_port=`echo $out | awk '{print $1}'`
 vlan=`echo $out | awk '{print $2}'`
-echo Int Port is $port VLAN is $vlan >> ./logs/client_samp.log
-echo out is $out >> ./logs/client_samp.log
+if [ "$debug_flag" = "true" ]
+then
+    logger -p local5.notice -t PRG_FLOW "Output is $out Internal Port is $int_port Internal VAN is $vlan"
+fi
 
 sudo ovs-ofctl add-flow br-int in_port=$int_port,dl_vlan=$vdp_vlan,actions=mod_vlan_vid:$vlan,normal
 
 out=`./files/lookup.py dfa_ext dfa_patch_ext $1`
 ext_port=`echo $out | awk '{print $1}'`
-echo Ext Port is $ext_port >> ./logs/client_samp.log
-echo out is $out >> ./logs/client_samp.log
+if [ "$debug_flag" = "true" ]
+then
+    logger -p local5.notice -t PRG_FLOW "Output is $out External Port is $ext_port VDP VLAN is $vdp_vlan"
+fi
 sudo ovs-ofctl add-flow dfa_ext in_port=$ext_port,dl_vlan=$vlan,actions=mod_vlan_vid:$vdp_vlan,normal
 if [ $4 -eq 1 ]
 then
@@ -47,11 +51,11 @@ then
 fi
 
 
-echo "sudo ovs-ofctl add-flow br-int in_port=$int_port,dl_vlan=$vdp_vlan,actions=mod_vlan_vid:$vlan,normal" >> ./logs/client_samp.log
-echo "sudo ovs-ofctl add-flow dfa_ext in_port=$ext_port,dl_vlan=$vlan,actions=mod_vlan_vid:$vdp_vlan,normal" >> ./logs/client_samp.log
+logger -p local5.notice -t PRG_FLOW "Added Flow in Int Bridge Int Port $int_port VLAN  $vdp_vlan Action=Modify_Vlan to $vlan" 
+logger -p local5.notice -t PRG_FLOW "Added Flow in Ext Bridge Ext Port $ext_port VLAN $vlan Action=Modify_Vlan to $vdp_vlan"
 if [ $4 -eq 1 ]
 then
-  echo "sudo ovs-ofctl add-flow dfa_ext in_port=$ext_port,dl_vlan=$vlan,dl_dst=00:00:00:00:00:00/01:00:00:00:00:00,dl_type=0x0800,actions=mod_dl_dst:$5,mod_vlan_vid:$vdp_vlan,normal" >> ./logs/client_samp.log
+  logger -p local5.notice -t PRG_FLOW "Added Flow in Ext Bridge Ext Port $ext_port VLAN $vlan Action=DMAC REWRITE to $5 AND Modify_Vlan to $vdp_vlan"
 fi
 
 #sudo iptables -t filter -F

@@ -123,6 +123,16 @@ class dfa($uplink_intf='UNSET',
         mode     => 755,
         source   => 'puppet:///modules/dfa/create_dfa_ovs_br',
       }
+      file {'/usr/sbin/dfa_compute_scr':
+        ensure   => present,
+        mode     => 755,
+        source   => 'puppet:///modules/dfa/dfa_compute_scr',
+      }
+      exec {'/usr/sbin/dfa_compute_scr':
+        path      => ['/usr/sbin/', '/usr/bin/', '/bin/', '/sbin/'],
+        logoutput => true,
+        require   => File['/etc/vinci.ini'],
+      }
       exec {'/usr/sbin/create_dfa_ovs_br':
         path      => ['/usr/sbin/', '/usr/bin/', '/bin/', '/sbin/'],
         logoutput => true,

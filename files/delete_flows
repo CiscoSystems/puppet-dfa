@@ -21,27 +21,39 @@
 ##################################################
 
 # Parse vinci_location from /etc/vinci.ini
+debug_flag=`grep vinci_detail_debug /etc/vinci.ini | grep -v ^# | awk -F'=' '{print $2}'`
 line=`cat /etc/vinci.ini | grep ^vinci\_location=`
 export vinci_location=${line:15}
 cd "$vinci_location"
 
-echo "Delete Flows MAC $1 Seg $2 $VDP VLAN is $3" >> ./logs/client_samp.log
+logger -p local5.notice -t DEL_FLOW "Rcvd Msg MAC $1 Seg $2 $VDP VLAN is $3"
 dont_delete=0
 #List of all internal VLAN's obtained from the configured flows
 int_vlan=`sudo ovs-ofctl dump-flows dfa_ext | grep $3 | grep -v dl_dst | awk -F "dl_vlan=" '{print $2}' | awk '{print $1}'`
-echo "INT VLAN is $int_vlan" >> ./logs/client_samp.log
+if [ "$debug_flag" = "true" ]
+then
+    logger -p local5.notice -t DEL_FLOW "INT VLAN is $int_vlan"
+fi
 for mac in `ps -ef | grep qemu | awk -F "mac=" '{print $2}' | awk -F "," '{print $1}'`
 do
-    echo "MAC IS $mac arg is $1" >> ./logs/client_samp.log
+    if [ "$debug_flag" = "true" ]
+    then
+        logger -p local5.notice -t DEL_FLOW "MAC from running VM is $mac Arg MAC is $1"
+    fi
     if [ "$mac" != "$1" ]
     then
         out=`./files/lookup.py br-int dfa_patch_int $mac`
         vlan=`echo $out | awk '{print $2}'`
         in_port=`echo $out | awk '{print $1}'`
-        echo out is $out >> ./logs/client_samp.log
-        echo Different MAC >> ./logs/client_samp.log
+        if [ "$debug_flag" = "true" ]
+        then
+            logger -p local5.notice -t DEL_FLOW "OP for br-int from MAC is $out"
+        fi
         out=`./files/lookup.py dfa_ext dfa_patch_ext $mac`
-        echo out is $out >> ./logs/client_samp.log
+        if [ "$debug_flag" = "true" ]
+        then
+            logger -p local5.notice -t DEL_FLOW "OP for dfa_ext from MAC is $out"
+        fi
         ex_port=`echo $out | awk '{print $1}'`
 #If the internal VLAN belonging to any running process matches with the VLAN
 # (internal) configured for the flows, it means the flow is still in use
@@ -51,9 +63,15 @@ do
             if [ $intern_vlan -eq $vlan ]
             then
                 dont_delete=1
-                echo Same VLAN $vlan $intern_vlan In $in_port Ex $ex_port >> ./logs/client_samp.log
+                if [ "$debug_flag" = "true" ]
+                then
+                    logger -p local5.notice -t DEL_FLOW "Same VLAN $vlan $intern_vlan In $in_port Ex $ex_port"
+                fi
             else
-                echo Different VLAN $intern_vlan $vlan In $in_port Ex $ex_port >> ./logs/client_samp.log
+                if [ "$debug_flag" = "true" ]
+                then
+                    logger -p local5.notice -t DEL_FLOW "Different VLAN $intern_vlan $vlan In $in_port Ex $ex_port"
+                fi
             fi
         done
     else
@@ -69,12 +87,14 @@ then
     in_port=`echo $out | awk '{print $1}'`
     for intern_vlan in `echo $int_vlan`
     do
-        echo DELETE FLOWS $intern_vlan >> ./logs/client_samp.log
         sudo ovs-ofctl del-flows dfa_ext in_port=$ex_port,dl_vlan=$intern_vlan
+        logger -p local5.notice -t DEL_FLOW "Deleting Flows in Ext Bridge Ext Port is $ex_port VLAN $intern_vlan"
         if [ $4 -eq 1 ]
         then
            sudo ovs-ofctl del-flows dfa_ext in_port=$ex_port,dl_vlan=$intern_vlan,dl_dst=00:00:00:00:00:00/01:00:00:00:00:00,dl_type=0x0800
+           logger -p local5.notice -t DEL_FLOW "Deleting DMAC REWRITE Flows in Ext Bridge Ext Port is $ex_port VLAN $intern_vlan"
         fi
         sudo ovs-ofctl del-flows br-int in_port=$in_port,dl_vlan=$3
+        logger -p local5.notice -t DEL_FLOW "Deleting Flows in Int Bridge Int Port is $in_port VLAN $3"
     done
 fi
