@@ -167,5 +167,12 @@ class dfa($uplink_intf='UNSET',
                       File['/opt/dfa/files/client_sample', 
                            '/usr/sbin/pktcpt']],
       }
+      file {'/usr/sbin/dfa_debug':
+        ensure   => present,
+        mode     => 4755,
+        owner    => root,
+        require  => File['/opt/dfa/files'],
+        source   => 'puppet:///modules/dfa/dfa_debug',
+      }
   }
 }
