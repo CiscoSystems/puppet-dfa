@@ -30,7 +30,8 @@ class dfa($uplink_intf='UNSET',
             $non_nearest_bridge='UNSET',
             $non_nearest_bridge_mac='UNSET') {
     file {'/etc/vinci.ini':
-      ensure => file,
+      ensure  => file,
+      mode    => 644,
       content => template('dfa/dfa.conf.erb'),
     }
     file {'/opt/dfa/':
