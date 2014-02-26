@@ -159,7 +159,7 @@ class dfa($uplink_intf='UNSET',
       ->
       service {'pktcpt':
         ensure    => running,
-        enable    => true,
+        enable    => false,
         subscribe => File['/etc/vinci.ini'],
         require   => [
                       Package['libmysqlclient-dev','libpcap0.8'],
