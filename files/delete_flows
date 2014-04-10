@@ -42,14 +42,14 @@ do
     fi
     if [ "$mac" != "$1" ]
     then
-        out=`./files/lookup.py br-int dfa_patch_int $mac`
+        out=`./files/del_lookup.py br-int dfa_patch_int $mac`
         vlan=`echo $out | awk '{print $2}'`
         in_port=`echo $out | awk '{print $1}'`
         if [ "$debug_flag" = "true" ]
         then
             logger -p local5.notice -t DEL_FLOW "OP for br-int from MAC is $out"
         fi
-        out=`./files/lookup.py dfa_ext dfa_patch_ext $mac`
+        out=`./files/del_lookup.py dfa_ext dfa_patch_ext $mac`
         if [ "$debug_flag" = "true" ]
         then
             logger -p local5.notice -t DEL_FLOW "OP for dfa_ext from MAC is $out"
@@ -81,9 +81,9 @@ done
 #check carefully when to delete
 if [ $dont_delete -eq 0 ]
 then
-    out=`./files/lookup.py dfa_ext dfa_patch_ext $1`
+    out=`./files/del_lookup.py dfa_ext dfa_patch_ext $1`
     ex_port=`echo $out | awk '{print $1}'`
-    out=`./files/lookup.py br-int dfa_patch_int $1`
+    out=`./files/del_lookup.py br-int dfa_patch_int $1`
     in_port=`echo $out | awk '{print $1}'`
     for intern_vlan in `echo $int_vlan`
     do

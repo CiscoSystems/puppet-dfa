@@ -27,18 +27,28 @@ import commands
 bridge_name = sys.argv[1]
 port_name = sys.argv[2]
 mac_address = sys.argv[3]
-port_id = sys.argv[4]
 
 internal_port = -5
 vlan = -5
 
+f = open('/tmp/dat','a')
+f.write('BEG \n')
+f.close()
 try:
     internal_port = re.search(r'(?P<num>\d+)\(%s\)' % port_name, commands.getoutput('sudo ovs-ofctl show %s' % bridge_name)).group('num')
 
-    cmd = 'sudo ovs-vsctl -- --columns=name find Interface external_ids:iface-id=%s' % (port_id)
-    cout = commands.getoutput(cmd)
-    port_name = cout.split(':')[1].replace('"', '').strip()
-    vlan = re.search(r'Port "%s"\s+tag\: (?P<tag>\d+)' % port_name, commands.getoutput('sudo ovs-vsctl show')).group('tag')
+    taps = re.findall(r'tap([\da-f\-]+)', commands.getoutput('brctl show'))
+    for tap in taps:
+        f = open('/tmp/dat','a')
+        f.write('TAP found \n')
+        f.close()
+        mac = re.search(r'HWaddr (?P<mac>[\da-f\:]+)', commands.getoutput('ifconfig tap%s' % tap)).group('mac')
+        if mac[2:] == mac_address[2:]:
+            f = open('/tmp/dat','a')
+            f.write('MAC found \n')
+            f.close()
+            vlan = re.search(r'Port "(tap|qvo)%s"\s+tag\: (?P<tag>\d+)' % tap, commands.getoutput('sudo ovs-vsctl show')).group('tag')
+
     print internal_port
     print vlan
 except Exception:
