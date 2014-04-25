@@ -44,7 +44,7 @@ class dfa($uplink_intf='UNSET',
       mode     => 644,
       require => File['/etc/vinci.ini'],
     } 
-    if $compute == 'false' {
+    if ($compute == 'false') or ($compute == 'allinone') {
       file {'/usr/sbin/dfa_control_scr':
         ensure   => present,
         mode     => 755,
@@ -62,7 +62,7 @@ class dfa($uplink_intf='UNSET',
                               'nova-scheduler']],
       }
     }
-    if $compute == 'true' {
+    if ($compute == 'true') or ($compute == 'allinone') {
       file {'/opt/dfa/files/client_sample':
         ensure   => present,
         mode     => 4755,
