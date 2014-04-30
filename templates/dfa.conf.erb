@@ -47,6 +47,9 @@ User=<%= @dcnm_username %>
 <% if dcnm_password != 'UNSET' -%>
 Password=<%= @dcnm_password %>
 <% end -%>
+<% if dcnm_dhcp_server != 'UNSET' -%>
+dhcp_server=<%= @dcnm_dhcp_server %>
+<% end -%>
 [Tenant]
 <% if gateway_mac != 'UNSET' -%>
 gateway_mac=<%= @gateway_mac %>

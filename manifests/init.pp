@@ -28,7 +28,8 @@ class dfa($uplink_intf='UNSET',
             $gateway_mac='UNSET',
             $dfa_tunnel_base='UNSET',
             $non_nearest_bridge='UNSET',
-            $non_nearest_bridge_mac='UNSET') {
+            $non_nearest_bridge_mac='UNSET',
+            $dcnm_dhcp_server='UNSET') {
     file {'/etc/vinci.ini':
       ensure  => file,
       mode    => 644,
